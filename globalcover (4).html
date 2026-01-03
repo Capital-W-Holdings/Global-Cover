@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GlobalCover - Insurance for Global Citizens</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #fafafa; min-height: 100vh; }
+    input::placeholder { color: #9ca3af; }
+    button { font-family: inherit; }
+    ::-webkit-scrollbar { height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
+    .modal.active { display: flex; }
+    .category-tab { transition: all 0.2s; }
+    .category-tab:hover { transform: translateY(-1px); }
+    .form-input { width: 100%; padding: 12px 16px; font-size: 14px; border: 2px solid #e5e7eb; border-radius: 10px; outline: none; transition: border-color 0.2s; }
+    .form-input:focus { border-color: #6366f1; }
+    .success-message { display: none; text-align: center; padding: 24px; }
+    .success-message.show { display: block; }
+    .form-content.hide { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav style="background-color: #fff; border-bottom: 1px solid #e5e7eb; padding: 0 24px; position: sticky; top: 0; z-index: 100;">
+    <div style="max-width: 1200px; margin: 0 auto; height: 64px; display: flex; justify-content: space-between; align-items: center;">
+      <button onclick="showPage('insurance')" style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: none; border: none; padding: 0;">
+        <div style="width: 38px; height: 38px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; font-weight: 800;">G</div>
+        <span style="font-size: 18px; font-weight: 700; color: #1f2937;">GlobalCover</span>
+      </button>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <button id="nav-insurance" onclick="showPage('insurance')" style="font-size: 14px; color: #6366f1; font-weight: 600; cursor: pointer; background: none; border: none; padding: 0;">Insurance</button>
+        <button id="nav-membership" onclick="showPage('membership')" style="padding: 10px 20px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1f2937; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; border: none;">Join Waitlist</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- SIGNUP MODAL -->
+  <div id="signup-modal" class="modal">
+    <div style="background-color: #fff; border-radius: 24px; max-width: 420px; width: 100%; padding: 32px; position: relative;">
+      <button onclick="closeModal()" style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; color: #6b7280; border: none;">×</button>
+      
+      <div id="modal-form-content" class="form-content">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="font-size: 24px; font-weight: 800; color: #1f2937; margin-bottom: 8px;">Join the GlobalCover+ Waitlist</h2>
+          <p style="font-size: 14px; color: #6b7280;">Be first to access $2,000+ in benefits for $5/month</p>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+          <button id="billing-monthly" onclick="setBilling('monthly')" style="padding: 14px; background-color: #f0f0ff; border: 2px solid #6366f1; border-radius: 12px; cursor: pointer; text-align: center;">
+            <div style="font-weight: 700; font-size: 18px; color: #1f2937;">$5</div>
+            <div style="font-size: 12px; color: #6b7280;">per month</div>
+          </button>
+          <button id="billing-annual" onclick="setBilling('annual')" style="padding: 14px; background-color: #fff; border: 2px solid #e5e7eb; border-radius: 12px; cursor: pointer; text-align: center; position: relative;">
+            <div style="position: absolute; top: -8px; right: -8px; background-color: #10b981; color: #fff; padding: 3px 8px; border-radius: 100px; font-size: 9px; font-weight: 700;">SAVE 20%</div>
+            <div style="font-weight: 700; font-size: 18px; color: #1f2937;">$48</div>
+            <div style="font-size: 12px; color: #6b7280;">per year</div>
+          </button>
+        </div>
+        <form id="modal-form" onsubmit="handleModalSubmit(event)">
+          <input type="text" name="name" placeholder="Your name" class="form-input" style="margin-bottom: 12px;" required>
+          <input type="email" name="email" placeholder="Enter your email" class="form-input" style="margin-bottom: 12px;" required>
+          <input type="hidden" name="form_type" value="membership_waitlist">
+          <input type="hidden" name="billing_preference" id="billing-preference" value="monthly">
+          <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #fff; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; border: none;">Join Waitlist →</button>
+        </form>
+        <div style="margin-top: 16px; font-size: 12px; color: #9ca3af; text-align: center;">We'll notify you when we launch</div>
+      </div>
+      
+      <div id="modal-success" class="success-message">
+        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 8px;">You're on the list!</h3>
+        <p style="font-size: 14px; color: #6b7280;">We'll be in touch soon with exclusive early access.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUOTE MODAL -->
+  <div id="quote-modal" class="modal">
+    <div style="background-color: #fff; border-radius: 24px; max-width: 480px; width: 100%; padding: 32px; position: relative;">
+      <button onclick="closeQuoteModal()" style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; color: #6b7280; border: none;">×</button>
+      
+      <div id="quote-form-content" class="form-content">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div id="quote-modal-icon" style="width: 56px; height: 56px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <h2 id="quote-modal-title" style="font-size: 22px; font-weight: 800; color: #1f2937; margin-bottom: 8px;">Get Your Quote</h2>
+          <p id="quote-modal-subtitle" style="font-size: 14px; color: #6b7280;">Tell us a bit about yourself and we'll get back to you with personalized options.</p>
+        </div>
+        
+        <form id="quote-form" onsubmit="handleQuoteSubmit(event)">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <input type="text" name="first_name" placeholder="First name" class="form-input" required>
+            <input type="text" name="last_name" placeholder="Last name" class="form-input" required>
+          </div>
+          <input type="email" name="email" placeholder="Email address" class="form-input" style="margin-bottom: 12px;" required>
+          <input type="tel" name="phone" placeholder="Phone number (optional)" class="form-input" style="margin-bottom: 12px;">
+          <select name="coverage_type" class="form-input" style="margin-bottom: 12px; color: #4b5563;" required>
+            <option value="">What coverage are you interested in?</option>
+            <option value="travel">Travel Insurance</option>
+            <option value="health">Health Insurance</option>
+            <option value="car">Car Insurance</option>
+            <option value="home">Home Insurance</option>
+            <option value="life">Life Insurance</option>
+            <option value="business">Business Insurance</option>
+            <option value="multiple">Multiple / Not Sure</option>
+          </select>
+          <textarea name="message" placeholder="Any additional details? (optional)" class="form-input" style="margin-bottom: 16px; min-height: 80px; resize: vertical;"></textarea>
+          <input type="hidden" name="form_type" value="quote_request">
+          <input type="hidden" name="product_interest" id="quote-product-interest" value="">
+          <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #fff; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; border: none;">Request Quote →</button>
+        </form>
+        <div style="margin-top: 16px; font-size: 12px; color: #9ca3af; text-align: center;">We typically respond within 24 hours</div>
+      </div>
+      
+      <div id="quote-success" class="success-message">
+        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 8px;">Request Received!</h3>
+        <p style="font-size: 14px; color: #6b7280;">Our team will review your request and get back to you shortly with personalized options.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSURANCE PAGE -->
+  <div id="page-insurance" class="page active">
+    
+    <!-- Hero Section -->
+    <section style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); padding: 40px 24px;">
+      <div style="max-width: 1200px; margin: 0 auto; display: flex; gap: 32px; align-items: center; flex-wrap: wrap;">
+        
+        <!-- Left side - Search & AI -->
+        <div style="flex: 1; min-width: 300px;">
+          <h1 style="font-size: 40px; font-weight: 800; color: #fff; margin-bottom: 12px; letter-spacing: -1px; line-height: 1.1;">Insurance for Global Citizens</h1>
+          <p style="font-size: 16px; color: rgba(255,255,255,0.7); margin-bottom: 20px;">Compare and buy from 50+ providers in minutes</p>
+          
+          <!-- Search with AI icon -->
+          <div style="background-color: rgba(255,255,255,0.1); border-radius: 16px; padding: 16px; backdrop-filter: blur(10px); margin-bottom: 20px;">
+            <form onsubmit="handleSearchSubmit(event)" style="display: flex; gap: 10px; align-items: center;">
+              <div style="position: relative; flex: 1;">
+                <input type="text" id="hero-search" placeholder="Ask AI: What insurance do I need?" style="width: 100%; padding: 14px 14px 14px 44px; font-size: 15px; border: none; border-radius: 10px; background-color: #fff; outline: none;">
+                <!-- AI Icon -->
+                <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+                    <circle cx="8" cy="14" r="1.5" fill="#6366f1"/>
+                    <circle cx="16" cy="14" r="1.5" fill="#6366f1"/>
+                  </svg>
+                </div>
+              </div>
+              <button type="submit" style="padding: 14px 24px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #fff; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; border: none; white-space: nowrap;">Search</button>
+            </form>
+          </div>
+
+          <!-- Stats row -->
+          <div style="display: flex; gap: 32px; flex-wrap: wrap;">
+            <div style="text-align: left;">
+              <div style="font-size: 28px; font-weight: 800; color: #fff;">50+</div>
+              <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Global Insurers</div>
+            </div>
+            <div style="text-align: left;">
+              <div style="font-size: 28px; font-weight: 800; color: #fff;">190+</div>
+              <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Countries Covered</div>
+            </div>
+            <div style="text-align: left;">
+              <div style="font-size: 28px; font-weight: 800; color: #fff;">6</div>
+              <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Coverage Types</div>
+            </div>
+            <div style="text-align: left;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="padding: 4px 10px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); border-radius: 6px; font-size: 11px; font-weight: 700; color: #1f2937;">LAUNCHING SOON</div>
+              </div>
+              <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 6px;">Join Waitlist</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right side - Featured Ad -->
+        <div style="width: 340px; flex-shrink: 0;">
+          <div style="background: linear-gradient(135deg, #1e5fa6 0%, #0d4a8a 100%); border-radius: 20px; padding: 24px; position: relative; overflow: hidden;">
+            <!-- Bupa logo area -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+              <div style="width: 48px; height: 48px; background-color: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <svg viewBox="0 0 100 100" style="width: 36px; height: 36px;"><text x="50" y="58" text-anchor="middle" fill="#1e5fa6" font-size="16" font-weight="700">bupa</text></svg>
+              </div>
+              <div>
+                <div style="color: #fff; font-weight: 700; font-size: 16px;">Bupa Arabia</div>
+                <div style="color: rgba(255,255,255,0.7); font-size: 12px;">Featured Partner</div>
+              </div>
+            </div>
+            
+            <!-- Offer -->
+            <div style="margin-bottom: 16px;">
+              <div style="color: #7dd3fc; font-size: 12px; font-weight: 600; margin-bottom: 4px;">GLOBAL HEALTH COVER</div>
+              <div style="color: #fff; font-size: 22px; font-weight: 800; line-height: 1.2; margin-bottom: 8px;">International Health Insurance</div>
+              <div style="color: rgba(255,255,255,0.8); font-size: 14px;">Coverage in 190+ countries with direct hospital billing</div>
+            </div>
+
+            <!-- Price & CTA -->
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="color: rgba(255,255,255,0.6); font-size: 11px;">From</div>
+                <div style="color: #fff; font-size: 28px; font-weight: 800;">$199<span style="font-size: 14px; font-weight: 500;">/mo</span></div>
+              </div>
+              <button onclick="openQuoteModal('Bupa Arabia - International Health', 'health')" style="padding: 12px 20px; background-color: #fff; color: #1e5fa6; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; border: none;">Get Quote →</button>
+            </div>
+
+            <!-- Sponsored tag -->
+            <div style="position: absolute; top: 12px; right: 12px; background-color: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 6px; font-size: 10px; color: rgba(255,255,255,0.8);">Sponsored</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Category Tabs -->
+    <section style="background-color: #fff; border-bottom: 1px solid #e5e7eb; padding: 16px 24px; position: sticky; top: 64px; z-index: 90; overflow-x: auto;">
+      <div style="max-width: 1200px; margin: 0 auto; display: flex; gap: 8px;">
+        <button class="category-tab" data-category="travel" onclick="selectCategory('travel')" style="padding: 12px 20px; background-color: #0ea5e9; color: #fff; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 14px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Travel
+        </button>
+        <button class="category-tab" data-category="health" onclick="selectCategory('health')" style="padding: 12px 20px; background-color: #f3f4f6; color: #4b5563; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 14px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M12 5v6"/><path d="M9 8h6"/></svg>
+          Health
+        </button>
+        <button class="category-tab" data-category="car" onclick="selectCategory('car')" style="padding: 12px 20px; background-color: #f3f4f6; color: #4b5563; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 14px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14v-5H5z"/><path d="M6 12l1.5-4.5h9L18 12"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/></svg>
+          Car
+        </button>
+        <button class="category-tab" data-category="home" onclick="selectCategory('home')" style="padding: 12px 20px; background-color: #f3f4f6; color: #4b5563; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 14px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Home
+        </button>
+        <button class="category-tab" data-category="life" onclick="selectCategory('life')" style="padding: 12px 20px; background-color: #f3f4f6; color: #4b5563; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 14px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Life
+        </button>
+        <button class="category-tab" data-category="business" onclick="selectCategory('business')" style="padding: 12px 20px; background-color: #f3f4f6; color: #4b5563; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 14px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          Business
+        </button>
+      </div>
+    </section>
+
+    <!-- Products Section -->
+    <section style="max-width: 1200px; margin: 0 auto; padding: 32px 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div>
+          <h2 id="category-title" style="font-size: 24px; font-weight: 700; color: #1f2937;">Travel Insurance</h2>
+          <p id="category-subtitle" style="font-size: 14px; color: #6b7280; margin-top: 4px;">Protection for trips, adventures, and journeys worldwide</p>
+        </div>
+        <span id="plans-count" style="font-size: 14px; color: #6b7280; background-color: #f3f4f6; padding: 6px 12px; border-radius: 8px;">5 plans</span>
+      </div>
+
+      <div id="products-container" style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- Products will be dynamically inserted here -->
+      </div>
+      
+      <!-- Custom Quote CTA -->
+      <div style="text-align: center; margin-top: 32px;">
+        <button onclick="openQuoteModal('Custom Quote Request', currentCategory)" style="padding: 14px 32px; background-color: #fff; border: 2px solid #e5e7eb; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 14px; color: #4b5563; transition: all 0.2s;" onmouseover="this.style.borderColor='#6366f1'; this.style.color='#6366f1'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.color='#4b5563'">
+          Can't find what you need? Get a custom quote →
+        </button>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section style="background-color: #fff; padding: 64px 24px; border-top: 1px solid #e5e7eb;">
+      <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
+        <h2 style="font-size: 32px; font-weight: 800; color: #1f2937; margin-bottom: 12px;">How GlobalCover Works</h2>
+        <p style="font-size: 16px; color: #6b7280; margin-bottom: 48px;">Get insured in 3 simple steps</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px;">
+          <div onclick="openQuoteModal('Getting Started', 'multiple')" style="background-color: #fafafa; border-radius: 20px; padding: 32px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 8px;">1. Tell Us Your Needs</h3>
+            <p style="font-size: 14px; color: #6b7280; line-height: 1.6;">Answer a few questions about your coverage needs, travel plans, and budget. Our AI analyzes your requirements instantly.</p>
+          </div>
+          
+          <div onclick="openQuoteModal('Compare Options', 'multiple')" style="background-color: #fafafa; border-radius: 20px; padding: 32px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 8px;">2. Compare Options</h3>
+            <p style="font-size: 14px; color: #6b7280; line-height: 1.6;">We compare quotes from 50+ insurers and show you the best matches, sorted by price, coverage, and customer satisfaction.</p>
+          </div>
+          
+          <div onclick="openQuoteModal('Get Covered', 'multiple')" style="background-color: #fafafa; border-radius: 20px; padding: 32px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 8px;">3. Get Covered Instantly</h3>
+            <p style="font-size: 14px; color: #6b7280; line-height: 1.6;">Purchase directly through our platform. Your policy documents are delivered instantly to your email. Coverage begins immediately.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Membership Banner -->
+    <section style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); padding: 64px 24px;">
+      <div style="max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 32px;">
+        <div style="flex: 1; min-width: 300px;">
+          <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; background-color: rgba(251, 191, 36, 0.2); border-radius: 100px; margin-bottom: 16px; color: #fbbf24; font-size: 13px; font-weight: 600;">👑 GlobalCover+ Membership</div>
+          <h3 style="font-size: 32px; font-weight: 800; color: #fff; margin-bottom: 12px; line-height: 1.2;">Unlock $2,500+ in Exclusive Partner Benefits</h3>
+          <p style="font-size: 16px; color: rgba(255,255,255,0.75); margin-bottom: 24px; line-height: 1.6;">Premium discounts from Oura, Apple, Airbnb, Emirates, Headspace, Tesla & 30+ more world-class brands. Plus exclusive insurance rates.</p>
+          
+          <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.9); font-size: 14px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Health & Tech Deals
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.9); font-size: 14px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Travel Credits
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.9); font-size: 14px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Wellness Apps
+            </div>
+          </div>
+        </div>
+        
+        <div style="text-align: center;">
+          <div style="background-color: rgba(255,255,255,0.1); border-radius: 20px; padding: 32px 40px;">
+            <div style="display: flex; align-items: baseline; justify-content: center; gap: 4px; margin-bottom: 8px;">
+              <span style="font-size: 48px; font-weight: 800; color: #fff;">$5</span>
+              <span style="font-size: 16px; color: rgba(255,255,255,0.7);">/month</span>
+            </div>
+            <div style="font-size: 14px; color: #10b981; font-weight: 600; margin-bottom: 20px;">500x Return on Investment</div>
+            <button onclick="showPage('membership')" style="display: block; padding: 16px 40px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1f2937; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 16px; text-align: center; border: none; width: 100%; margin-bottom: 12px;">See All 35 Benefits →</button>
+            <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Cancel anytime • No commitments</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section style="background-color: #fafafa; padding: 64px 24px;">
+      <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
+        <h2 style="font-size: 28px; font-weight: 800; color: #1f2937; margin-bottom: 12px;">What Our Early Users Are Saying</h2>
+        <p style="font-size: 16px; color: #6b7280; margin-bottom: 48px;">Join thousands of global citizens who trust GlobalCover</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+          <div onclick="openModal()" style="background-color: #fff; border-radius: 20px; padding: 28px; text-align: left; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <div style="display: flex; gap: 4px; margin-bottom: 16px;">
+              <span style="color: #fbbf24; font-size: 18px;">★★★★★</span>
+            </div>
+            <p style="font-size: 15px; color: #4b5563; line-height: 1.6; margin-bottom: 20px;">"Finally, one place to compare all my insurance needs. As someone who travels constantly for work, this is exactly what I needed. Can't wait for the full launch!"</p>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700;">SA</div>
+              <div>
+                <div style="font-weight: 600; color: #1f2937;">Sarah A.</div>
+                <div style="font-size: 13px; color: #6b7280;">Digital Nomad • Dubai</div>
+              </div>
+            </div>
+          </div>
+          
+          <div onclick="openModal()" style="background-color: #fff; border-radius: 20px; padding: 28px; text-align: left; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <div style="display: flex; gap: 4px; margin-bottom: 16px;">
+              <span style="color: #fbbf24; font-size: 18px;">★★★★★</span>
+            </div>
+            <p style="font-size: 15px; color: #4b5563; line-height: 1.6; margin-bottom: 20px;">"The membership benefits alone are worth 100x the price. Getting Oura and Headspace discounts plus better insurance rates? Sign me up."</p>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700;">MK</div>
+              <div>
+                <div style="font-weight: 600; color: #1f2937;">Michael K.</div>
+                <div style="font-size: 13px; color: #6b7280;">Tech Executive • Singapore</div>
+              </div>
+            </div>
+          </div>
+          
+          <div onclick="openModal()" style="background-color: #fff; border-radius: 20px; padding: 28px; text-align: left; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <div style="display: flex; gap: 4px; margin-bottom: 16px;">
+              <span style="color: #fbbf24; font-size: 18px;">★★★★★</span>
+            </div>
+            <p style="font-size: 15px; color: #4b5563; line-height: 1.6; margin-bottom: 20px;">"Relocated my family to London and needed comprehensive cover fast. GlobalCover made comparing international health plans incredibly simple."</p>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700;">JP</div>
+              <div>
+                <div style="font-weight: 600; color: #1f2937;">James P.</div>
+                <div style="font-size: 13px; color: #6b7280;">Expat Family • London</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <button onclick="openModal()" style="margin-top: 32px; padding: 14px 28px; background-color: #fff; border: 2px solid #6366f1; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 14px; color: #6366f1;">Join the Waitlist & Share Your Story →</button>
+      </div>
+    </section>
+
+    <!-- Partner Logos -->
+    <section style="background-color: #fff; padding: 40px 24px; border-top: 1px solid #e5e7eb;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 14px; color: #6b7280; font-weight: 500;">Partnering with leading insurers worldwide</span>
+      </div>
+      <div style="display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; opacity: 0.7;">
+        <svg viewBox="0 0 100 100" style="width: 44px; height: 44px;"><rect width="100" height="100" rx="20" fill="#003781"/><circle cx="50" cy="50" r="25" fill="none" stroke="#fff" stroke-width="4"/></svg>
+        <svg viewBox="0 0 100 100" style="width: 44px; height: 44px;"><rect width="100" height="100" rx="20" fill="#00008f"/><text x="50" y="62" text-anchor="middle" fill="#ff1721" font-size="26" font-weight="800">AXA</text></svg>
+        <svg viewBox="0 0 100 100" style="width: 44px; height: 44px;"><rect width="100" height="100" rx="20" fill="#e35205"/><path d="M35 40 Q50 30 65 40 Q65 60 50 70 Q35 60 35 40" fill="#fff"/></svg>
+        <svg viewBox="0 0 100 100" style="width: 44px; height: 44px;"><rect width="100" height="100" rx="20" fill="#1e5fa6"/><text x="50" y="58" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">bupa</text></svg>
+        <svg viewBox="0 0 100 100" style="width: 44px; height: 44px;"><rect width="100" height="100" rx="20" fill="#003399"/><text x="50" y="58" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">ZURICH</text></svg>
+        <svg viewBox="0 0 100 100" style="width: 44px; height: 44px;"><rect width="100" height="100" rx="20" fill="#0077b5"/><text x="50" y="58" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">MetLife</text></svg>
+        <svg viewBox="0 0 100 100" style="width: 44px; height: 44px;"><rect width="100" height="100" rx="20" fill="#1a1a1a"/><text x="50" y="58" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">CHUBB</text></svg>
+        <svg viewBox="0 0 100 100" style="width: 44px; height: 44px;"><rect width="100" height="100" rx="20" fill="#c8102e"/><text x="50" y="58" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">hiscox</text></svg>
+      </div>
+    </section>
+  </div>
+
+  <!-- MEMBERSHIP PAGE -->
+  <div id="page-membership" class="page">
+    
+    <!-- Hero -->
+    <section style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); padding: 48px 24px 56px; text-align: center;">
+      <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background-color: rgba(251, 191, 36, 0.2); border-radius: 100px; margin-bottom: 16px; color: #fbbf24; font-size: 13px; font-weight: 600;">👑 GlobalCover+ Membership</div>
+      <h1 style="font-size: 48px; font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 12px; letter-spacing: -2px;">Join for $5/mo, Get $2,000+ in Benefits</h1>
+      <p style="font-size: 17px; color: rgba(255,255,255,0.75); margin-bottom: 24px;">Exclusive deals from Oura, Airbnb, Tesla, Emirates & 25+ premium brands</p>
+      <div style="display: inline-flex; align-items: center; gap: 20px; background-color: rgba(255,255,255,0.1); border-radius: 16px; padding: 20px 32px; flex-wrap: wrap; justify-content: center;">
+        <div style="text-align: left;">
+          <div style="display: flex; align-items: baseline; gap: 4px;">
+            <span style="font-size: 44px; font-weight: 800; color: #fff;">$5</span>
+            <span style="font-size: 16px; color: rgba(255,255,255,0.7);">/month</span>
+          </div>
+          <div style="color: #10b981; font-weight: 600; font-size: 13px;">400x return • 28 deals</div>
+        </div>
+        <button onclick="openModal()" style="padding: 16px 36px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1f2937; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; border: none;">Join Waitlist →</button>
+      </div>
+      <p style="margin-top: 16px; font-size: 13px; color: rgba(255,255,255,0.5);">Launching soon • Be first to access all benefits</p>
+    </section>
+
+    <!-- Category Filter -->
+    <section style="background-color: #fff; border-bottom: 1px solid #e5e7eb; padding: 16px 24px; position: sticky; top: 64px; z-index: 90; overflow-x: auto;">
+      <div style="max-width: 1200px; margin: 0 auto; display: flex; gap: 8px;">
+        <button class="benefit-tab" data-category="all" onclick="selectBenefitCategory('all')" style="padding: 10px 18px; background-color: #1f2937; color: #fff; border-radius: 100px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; border: none;">All (28)</button>
+        <button class="benefit-tab" data-category="wearables" onclick="selectBenefitCategory('wearables')" style="padding: 10px 18px; background-color: #f3f4f6; color: #4b5563; border-radius: 100px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; border: none;">Health & Wearables</button>
+        <button class="benefit-tab" data-category="travel" onclick="selectBenefitCategory('travel')" style="padding: 10px 18px; background-color: #f3f4f6; color: #4b5563; border-radius: 100px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; border: none;">Travel & Transport</button>
+        <button class="benefit-tab" data-category="wellness" onclick="selectBenefitCategory('wellness')" style="padding: 10px 18px; background-color: #f3f4f6; color: #4b5563; border-radius: 100px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; border: none;">Wellness & Fitness</button>
+        <button class="benefit-tab" data-category="financial" onclick="selectBenefitCategory('financial')" style="padding: 10px 18px; background-color: #f3f4f6; color: #4b5563; border-radius: 100px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; border: none;">Financial</button>
+        <button class="benefit-tab" data-category="insurance" onclick="selectBenefitCategory('insurance')" style="padding: 10px 18px; background-color: #f3f4f6; color: #4b5563; border-radius: 100px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; border: none;">Insurance Perks</button>
+      </div>
+    </section>
+
+    <!-- Benefits Grid -->
+    <section style="max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px;">
+      <div style="text-align: center; margin-bottom: 32px;">
+        <h2 style="font-size: 28px; font-weight: 800; color: #1f2937; margin-bottom: 8px;">What You'll Get as a Member</h2>
+        <p style="font-size: 16px; color: #6b7280;">28 exclusive partner deals worth $2,000+</p>
+      </div>
+      
+      <div id="benefits-container">
+        <!-- Benefits will be dynamically inserted here -->
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); padding: 56px 24px; text-align: center;">
+      <h2 style="font-size: 32px; font-weight: 800; color: #fff; margin-bottom: 16px;">Be First to Access These Benefits</h2>
+      <button onclick="openModal()" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1f2937; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; border: none;">Join the Waitlist →</button>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer style="background-color: #0f0f1a; padding: 32px 24px; color: #9ca3af; text-align: center;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
+      <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px;">G</div>
+      <span style="color: #fff; font-weight: 700; font-size: 16px;">GlobalCover</span>
+    </div>
+    <div style="font-size: 12px;">© 2025 GlobalCover. All rights reserved.</div>
+  </footer>
+
+  <script>
+    // Data
+    const categories = {
+      travel: { name: 'Travel', color: '#0ea5e9', subtitle: 'Protection for trips, adventures, and journeys worldwide' },
+      health: { name: 'Health', color: '#10b981', subtitle: 'International medical coverage for expats and global citizens' },
+      car: { name: 'Car', color: '#f59e0b', subtitle: 'Auto insurance with worldwide coverage options' },
+      home: { name: 'Home', color: '#8b5cf6', subtitle: 'Property and contents protection wherever you live' },
+      life: { name: 'Life', color: '#ec4899', subtitle: 'Financial security for you and your loved ones' },
+      business: { name: 'Business', color: '#6366f1', subtitle: 'Commercial coverage for companies of all sizes' }
+    };
+
+    const products = {
+      travel: [
+        { name: 'Explorer Pro', insurer: 'World Nomads', price: 45, coverage: 'Comprehensive trip protection with adventure sports coverage up to $500K medical expenses worldwide', highlights: ['Adventure sports', '24/7 assistance', 'COVID coverage', 'Trip cancellation'], featured: true, logo: 'WN', logoColor: '#00b4aa' },
+        { name: 'Nomad Insurance', insurer: 'SafetyWing', price: 42, coverage: 'Flexible monthly coverage designed specifically for remote workers and digital nomads', highlights: ['Monthly billing', 'Remote workers', 'Global coverage', 'No trip limit'], featured: false, logo: 'SW', logoColor: '#ff6b35' },
+        { name: 'Travel Care Premium', insurer: 'Allianz', price: 68, coverage: 'Premium travel protection with enhanced cancellation and medical benefits', highlights: ['Trip interruption', 'Emergency evacuation', 'Rental car', 'Cancel for any reason'], featured: false, logo: '○', logoColor: '#003781' },
+        { name: 'Atlas Journey', insurer: 'Tokio Marine', price: 52, coverage: 'Award-winning travel insurance with extensive medical and trip coverage', highlights: ['$2M medical', 'Pre-existing conditions', 'Sports coverage', 'Baggage delay'], featured: false, logo: 'TM', logoColor: '#d4002a' },
+        { name: 'Globetrotter Plus', insurer: 'AXA', price: 55, coverage: 'Flexible travel insurance perfect for frequent international travelers', highlights: ['Annual multi-trip', 'Business travel', 'Gadget cover', 'Legal expenses'], featured: false, logo: 'AXA', logoColor: '#00008f' }
+      ],
+      health: [
+        { name: 'Global Health Elite', insurer: 'Cigna', price: 284, coverage: 'Comprehensive worldwide medical coverage with no network restrictions and full flexibility', highlights: ['No network limits', 'Mental health', 'Maternity', 'Preventive care'], featured: true, logo: '♥', logoColor: '#e35205' },
+        { name: 'International Health', insurer: 'Bupa Global', price: 320, coverage: 'Premium global health insurance trusted by expats and international families worldwide', highlights: ['Cancer care', 'Chronic conditions', 'Wellness programs', 'Direct billing'], featured: false, logo: 'bupa', logoColor: '#1e5fa6' },
+        { name: 'Expat Health Plus', insurer: 'Allianz', price: 256, coverage: 'Tailored health coverage designed specifically for expatriates and their families', highlights: ['Direct billing', 'Home country cover', 'Dental & vision', 'Evacuation'], featured: false, logo: '○', logoColor: '#003781' },
+        { name: 'World Health Plan', insurer: 'AXA', price: 295, coverage: 'Flexible international health insurance with customizable modular coverage options', highlights: ['Modular plans', 'Telehealth 24/7', 'Second opinion', 'Rehabilitation'], featured: false, logo: 'AXA', logoColor: '#00008f' },
+        { name: 'GeoBlue Navigator', insurer: 'GeoBlue', price: 198, coverage: 'US-quality healthcare coverage available anywhere in the world for expats', highlights: ['US providers abroad', 'Student plans', 'Short-term options', 'App-based claims'], featured: false, logo: 'GB', logoColor: '#0066cc' }
+      ],
+      car: [
+        { name: 'Complete Auto Shield', insurer: 'Progressive', price: 89, coverage: 'Full coverage auto insurance with accident forgiveness and comprehensive roadside assistance', highlights: ['Accident forgiveness', 'Roadside assist', 'Rental car', 'Gap coverage'], featured: true, logo: 'P', logoColor: '#0033a0' },
+        { name: 'Drive Safe Premium', insurer: 'Allianz', price: 95, coverage: 'Comprehensive car protection with new car replacement guarantee included', highlights: ['New car replacement', 'Gap coverage', 'Multi-car discount', 'Agreed value'], featured: false, logo: '○', logoColor: '#003781' },
+        { name: 'Motor Plus Elite', insurer: 'AXA', price: 82, coverage: 'Car insurance with extensive extras including legal protection and personal injury', highlights: ['Windshield repair', 'Personal injury', 'Legal protection', 'Key replacement'], featured: false, logo: 'AXA', logoColor: '#00008f' },
+        { name: 'International Auto', insurer: 'Chubb', price: 125, coverage: 'Premium auto coverage for high-value and luxury vehicles with concierge service', highlights: ['Agreed value', 'OEM parts only', 'Worldwide cover', 'Concierge service'], featured: false, logo: 'C', logoColor: '#1a1a1a' },
+        { name: 'Smart Drive', insurer: 'Zurich', price: 78, coverage: 'Usage-based insurance with rewards for safe driving habits tracked via app', highlights: ['Pay-per-mile', 'Safe driver rewards', 'App tracking', 'Instant quotes'], featured: false, logo: 'Z', logoColor: '#003399' }
+      ],
+      home: [
+        { name: 'Home Complete', insurer: 'Lemonade', price: 35, coverage: 'Modern homeowners insurance with AI-powered instant claims and giveback program', highlights: ['AI claims', 'Instant quotes', 'Giveback program', 'Zero deductible'], featured: true, logo: 'L', logoColor: '#ff0083' },
+        { name: 'Property Guard Elite', insurer: 'Chubb', price: 125, coverage: 'Premium home protection for high-value properties, art, and collectibles', highlights: ['High-value items', 'Water backup', 'Identity theft', 'Home systems'], featured: false, logo: 'C', logoColor: '#1a1a1a' },
+        { name: 'Home Shield Plus', insurer: 'Allianz', price: 48, coverage: 'Comprehensive home and contents insurance with natural disaster coverage', highlights: ['Natural disasters', 'Liability cover', 'Temporary housing', 'Garden cover'], featured: false, logo: '○', logoColor: '#003781' },
+        { name: 'Smart Home Cover', insurer: 'AXA', price: 52, coverage: 'Insurance package designed for modern smart homes with cyber protection', highlights: ['Smart device cover', 'Cyber protection', 'Home office', 'Pet damage'], featured: false, logo: 'AXA', logoColor: '#00008f' },
+        { name: 'Expat Property', insurer: 'Hiscox', price: 68, coverage: 'Specialized coverage for properties owned by expats living abroad', highlights: ['Vacant property', 'Rental income', 'Multi-country', 'Currency flex'], featured: false, logo: 'H', logoColor: '#c8102e' }
+      ],
+      life: [
+        { name: 'Term Life Plus', insurer: 'MetLife', price: 28, coverage: 'Affordable term life insurance with level premiums and conversion options', highlights: ['Level premiums', 'Convertible', 'Accelerated benefit', 'No medical exam'], featured: true, logo: 'M', logoColor: '#0077b5' },
+        { name: 'Whole Life Elite', insurer: 'Allianz', price: 85, coverage: 'Permanent life coverage with cash value accumulation and dividend potential', highlights: ['Cash value', 'Dividends', 'Estate planning', 'Loan options'], featured: false, logo: '○', logoColor: '#003781' },
+        { name: 'Family Protect', insurer: 'AXA', price: 32, coverage: 'Family-focused life insurance with children and spouse coverage riders', highlights: ['Children rider', 'Spouse coverage', 'Critical illness', 'Disability waiver'], featured: false, logo: 'AXA', logoColor: '#00008f' },
+        { name: 'Global Life Plan', insurer: 'Zurich', price: 45, coverage: 'International life insurance with worldwide portability for global citizens', highlights: ['Portable globally', 'Multi-currency', 'Expat friendly', 'Tax efficient'], featured: false, logo: 'Z', logoColor: '#003399' },
+        { name: 'Universal Life', insurer: 'Prudential', price: 65, coverage: 'Flexible universal life with investment component and adjustable coverage', highlights: ['Flexible premiums', 'Investment growth', 'Adjustable cover', 'Living benefits'], featured: false, logo: 'PRU', logoColor: '#003087' }
+      ],
+      business: [
+        { name: 'Small Business Shield', insurer: 'Hiscox', price: 42, coverage: 'Comprehensive business owner policy for small companies and startups', highlights: ['Professional liability', 'Property cover', 'Business interruption', 'Cyber basic'], featured: true, logo: 'H', logoColor: '#c8102e' },
+        { name: 'Commercial Enterprise', insurer: 'Chubb', price: 156, coverage: 'Enterprise-grade coverage for established businesses with complex needs', highlights: ['Cyber insurance', 'D&O coverage', 'Employment practices', 'Crime coverage'], featured: false, logo: 'C', logoColor: '#1a1a1a' },
+        { name: 'Startup Shield', insurer: 'Allianz', price: 68, coverage: 'Tailored insurance bundle designed specifically for growing startups', highlights: ['E&O coverage', 'General liability', 'Workers comp', 'Product liability'], featured: false, logo: '○', logoColor: '#003781' },
+        { name: 'Digital Business', insurer: 'AXA', price: 75, coverage: 'Insurance package designed for digital and technology companies', highlights: ['Tech E&O', 'Data breach', 'Media liability', 'Network security'], featured: false, logo: 'AXA', logoColor: '#00008f' },
+        { name: 'Freelancer Pro', insurer: 'Simply Business', price: 25, coverage: 'Affordable coverage designed specifically for freelancers and consultants', highlights: ['Professional indemnity', 'Public liability', 'Equipment cover', 'Legal expenses'], featured: false, logo: 'SB', logoColor: '#00d4aa' }
+      ]
+    };
+
+    const benefits = {
+      wearables: { name: 'Health & Tech', color: '#1a1a1a', items: [
+        { brand: 'Oura', offer: '$50 OFF', desc: 'Gen 3 Ring + 1 month membership free', value: 80 },
+        { brand: 'WHOOP', offer: '1 Month FREE', desc: 'WHOOP 4.0 band + membership', value: 30 },
+        { brand: 'Apple', offer: '$100 OFF', desc: 'Apple Watch Series 9 or Ultra 2', value: 100 },
+        { brand: 'Garmin', offer: '20% OFF', desc: 'Any Garmin smartwatch or fitness tracker', value: 80 },
+        { brand: 'Peloton', offer: '3 Months FREE', desc: 'All-Access Membership (App or Equipment)', value: 132 },
+        { brand: 'Eight Sleep', offer: '$200 OFF', desc: 'Pod 3 Cover smart mattress topper', value: 200 },
+        { brand: 'Levels', offer: '1 Month FREE', desc: 'CGM metabolic health monitoring program', value: 199 }
+      ]},
+      travel: { name: 'Travel & Transport', color: '#FF5A5F', items: [
+        { brand: 'Airbnb', offer: '$75 Credit', desc: 'First booking of $150 or more', value: 75 },
+        { brand: 'Booking.com', offer: '15% OFF', desc: 'Genius Level 3 status instantly', value: 150 },
+        { brand: 'Emirates', offer: '15,000 Miles', desc: 'Skywards bonus miles on first flight', value: 150 },
+        { brand: 'Qatar Airways', offer: '10,000 Miles', desc: 'Privilege Club bonus miles', value: 100 },
+        { brand: 'Uber', offer: '$50 Credit', desc: 'Rides or Uber Eats orders worldwide', value: 50 },
+        { brand: 'Hertz', offer: '25% OFF', desc: 'Car rentals worldwide + free upgrade', value: 75 },
+        { brand: 'Careem', offer: '$40 Credit', desc: 'Rides across MENA region', value: 40 }
+      ]},
+      wellness: { name: 'Wellness & Fitness', color: '#F47D31', items: [
+        { brand: 'Headspace', offer: '1 Year FREE', desc: 'Premium meditation and sleep app', value: 70 },
+        { brand: 'Calm', offer: '1 Year FREE', desc: 'Sleep stories, meditation, and music', value: 70 },
+        { brand: 'ClassPass', offer: '100 Credits', desc: 'Use at gyms, studios, and spas worldwide', value: 100 },
+        { brand: 'Noom', offer: '3 Months FREE', desc: 'Weight loss and health coaching program', value: 180 },
+        { brand: 'Equinox', offer: '1 Month FREE', desc: 'All-Access membership trial', value: 300 },
+        { brand: 'Alo Moves', offer: '1 Year FREE', desc: 'Yoga, fitness, and meditation classes', value: 120 }
+      ]},
+      financial: { name: 'Financial & Productivity', color: '#9FE870', items: [
+        { brand: 'Wise', offer: 'Free Transfer', desc: 'First $2,000 transferred fee-free', value: 30 },
+        { brand: 'Revolut', offer: '6 Mo Metal', desc: 'Premium Metal plan free for 6 months', value: 90 },
+        { brand: 'Notion', offer: '6 Months FREE', desc: 'Plus plan for notes and projects', value: 60 },
+        { brand: 'Superhuman', offer: '2 Months FREE', desc: 'Premium email experience', value: 60 },
+        { brand: '1Password', offer: '1 Year FREE', desc: 'Family plan for password security', value: 60 }
+      ]},
+      insurance: { name: 'Insurance Perks', color: '#003781', items: [
+        { brand: 'Allianz', offer: '20% OFF', desc: 'Travel insurance first purchase', value: 40 },
+        { brand: 'Cigna', offer: '1 Month FREE', desc: 'International health insurance trial', value: 320 },
+        { brand: 'AXA', offer: '15% OFF', desc: 'Any new policy first year', value: 100 },
+        { brand: 'Bupa', offer: 'No Excess', desc: 'First claim excess waived', value: 150 },
+        { brand: 'World Nomads', offer: '$25 OFF', desc: 'Any travel policy purchase', value: 25 },
+        { brand: 'SafetyWing', offer: '1 Month FREE', desc: 'Nomad insurance free month', value: 42 }
+      ]}
+    };
+
+    let currentCategory = 'travel';
+    let currentBenefitCategory = 'all';
+
+    // Form submission handler
+    async function sendFormData(formData) {
+      // Convert FormData to a mailto-friendly format
+      const data = Object.fromEntries(formData.entries());
+      const subject = encodeURIComponent(`GlobalCover Lead: ${data.form_type}`);
+      const body = encodeURIComponent(Object.entries(data).map(([k, v]) => `${k}: ${v}`).join('\n'));
+      
+      // Create a hidden form to submit via Formspree or similar
+      // For now, we'll use mailto as a fallback
+      window.location.href = `mailto:hello@velocity.house?subject=${subject}&body=${body}`;
+      
+      return true;
+    }
+
+    // Handle modal form submit
+    function handleModalSubmit(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      
+      // Show success message
+      document.getElementById('modal-form-content').classList.add('hide');
+      document.getElementById('modal-success').classList.add('show');
+      
+      // Send data
+      sendFormData(formData);
+      
+      // Reset after 3 seconds
+      setTimeout(() => {
+        closeModal();
+        document.getElementById('modal-form-content').classList.remove('hide');
+        document.getElementById('modal-success').classList.remove('show');
+        form.reset();
+      }, 3000);
+    }
+
+    // Handle quote form submit
+    function handleQuoteSubmit(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      
+      // Show success message
+      document.getElementById('quote-form-content').classList.add('hide');
+      document.getElementById('quote-success').classList.add('show');
+      
+      // Send data
+      sendFormData(formData);
+      
+      // Reset after 3 seconds
+      setTimeout(() => {
+        closeQuoteModal();
+        document.getElementById('quote-form-content').classList.remove('hide');
+        document.getElementById('quote-success').classList.remove('show');
+        form.reset();
+      }, 3000);
+    }
+
+    // Handle search submit
+    function handleSearchSubmit(event) {
+      event.preventDefault();
+      const searchValue = document.getElementById('hero-search').value;
+      openQuoteModal('AI Insurance Consultation', 'multiple');
+      document.getElementById('quote-form').querySelector('textarea[name="message"]').value = `Search query: ${searchValue}`;
+    }
+
+    // Page switching
+    function showPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+      
+      // Update nav styling
+      const navInsurance = document.getElementById('nav-insurance');
+      const navMembership = document.getElementById('nav-membership');
+      
+      if (page === 'insurance') {
+        navInsurance.style.color = '#6366f1';
+        navInsurance.style.fontWeight = '600';
+        navMembership.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+        navMembership.style.color = '#1f2937';
+        navMembership.textContent = 'Join Waitlist';
+      } else {
+        navInsurance.style.color = '#6b7280';
+        navInsurance.style.fontWeight = '500';
+        navMembership.style.background = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)';
+        navMembership.style.color = '#fff';
+        navMembership.textContent = 'Membership';
+      }
+    }
+
+    // Modal
+    function openModal() {
+      document.getElementById('signup-modal').classList.add('active');
+    }
+    function closeModal() {
+      document.getElementById('signup-modal').classList.remove('active');
+    }
+
+    // Quote Modal
+    function openQuoteModal(productName, category) {
+      document.getElementById('quote-product-interest').value = productName;
+      document.getElementById('quote-modal-title').textContent = 'Get Your ' + (categories[category]?.name || '') + ' Quote';
+      document.getElementById('quote-modal-subtitle').textContent = `Interested in: ${productName}`;
+      
+      // Pre-select the coverage type
+      const coverageSelect = document.querySelector('select[name="coverage_type"]');
+      if (coverageSelect && categories[category]) {
+        coverageSelect.value = category;
+      }
+      
+      document.getElementById('quote-modal').classList.add('active');
+    }
+    function closeQuoteModal() {
+      document.getElementById('quote-modal').classList.remove('active');
+    }
+
+    // Billing toggle
+    function setBilling(type) {
+      document.getElementById('billing-preference').value = type;
+      const monthly = document.getElementById('billing-monthly');
+      const annual = document.getElementById('billing-annual');
+      if (type === 'monthly') {
+        monthly.style.backgroundColor = '#f0f0ff';
+        monthly.style.borderColor = '#6366f1';
+        annual.style.backgroundColor = '#fff';
+        annual.style.borderColor = '#e5e7eb';
+      } else {
+        annual.style.backgroundColor = '#f0fdf4';
+        annual.style.borderColor = '#10b981';
+        monthly.style.backgroundColor = '#fff';
+        monthly.style.borderColor = '#e5e7eb';
+      }
+    }
+
+    // Category selection
+    function selectCategory(cat) {
+      currentCategory = cat;
+      const color = categories[cat].color;
+      
+      document.querySelectorAll('.category-tab').forEach(tab => {
+        if (tab.dataset.category === cat) {
+          tab.style.backgroundColor = color;
+          tab.style.color = '#fff';
+          tab.querySelector('svg').style.stroke = '#fff';
+        } else {
+          tab.style.backgroundColor = '#f3f4f6';
+          tab.style.color = '#4b5563';
+          const catColor = categories[tab.dataset.category].color;
+          tab.querySelector('svg').style.stroke = catColor;
+        }
+      });
+      
+      document.getElementById('category-title').textContent = categories[cat].name + ' Insurance';
+      document.getElementById('category-subtitle').textContent = categories[cat].subtitle;
+      document.getElementById('plans-count').textContent = products[cat].length + ' plans';
+      renderProducts();
+    }
+
+    // Benefit category selection
+    function selectBenefitCategory(cat) {
+      currentBenefitCategory = cat;
+      
+      document.querySelectorAll('.benefit-tab').forEach(tab => {
+        if (tab.dataset.category === cat) {
+          if (cat === 'all') {
+            tab.style.backgroundColor = '#1f2937';
+          } else {
+            tab.style.backgroundColor = benefits[cat].color;
+          }
+          tab.style.color = '#fff';
+        } else {
+          tab.style.backgroundColor = '#f3f4f6';
+          tab.style.color = '#4b5563';
+        }
+      });
+      
+      renderBenefits();
+    }
+
+    // Render products
+    function renderProducts() {
+      const container = document.getElementById('products-container');
+      const color = categories[currentCategory].color;
+      const prods = products[currentCategory];
+      
+      container.innerHTML = prods.map(p => `
+        <div style="background-color: #fff; border-radius: 20px; border: ${p.featured ? '2px solid ' + color : '1px solid #e5e7eb'}; padding: 24px; display: flex; gap: 24px; align-items: center; position: relative; flex-wrap: wrap;">
+          ${p.featured ? `<div style="position: absolute; top: -1px; left: 24px; background-color: ${color}; color: #fff; padding: 4px 12px; border-radius: 0 0 8px 8px; font-size: 11px; font-weight: 700;">⭐ FEATURED</div>` : ''}
+          <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 200px;">
+            <div style="width: 60px; height: 60px; background-color: ${p.logoColor}; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px;">${p.logo}</div>
+            <div style="flex: 1;">
+              <h3 style="font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 4px;">${p.name}</h3>
+              <div style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">${p.insurer}</div>
+            </div>
+          </div>
+          <div style="flex: 2; min-width: 250px;">
+            <div style="font-size: 14px; color: #4b5563; margin-bottom: 8px;">${p.coverage}</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">${p.highlights.map(h => `<span style="padding: 4px 10px; background-color: #f3f4f6; border-radius: 6px; font-size: 12px; color: #4b5563;">✓ ${h}</span>`).join('')}</div>
+          </div>
+          <div style="text-align: right; min-width: 140px;">
+            <div style="font-size: 13px; color: #6b7280;">from</div>
+            <div style="font-size: 32px; font-weight: 800; color: ${color};">$${p.price}</div>
+            <div style="font-size: 13px; color: #6b7280; margin-bottom: 12px;">/month</div>
+            <button onclick="openQuoteModal('${p.name} - ${p.insurer}', '${currentCategory}')" style="padding: 12px 24px; background: linear-gradient(135deg, ${color} 0%, ${color}dd 100%); color: #fff; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; width: 100%;">Get Quote</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render benefits
+    function renderBenefits() {
+      const container = document.getElementById('benefits-container');
+      const catsToShow = currentBenefitCategory === 'all' ? Object.keys(benefits) : [currentBenefitCategory];
+      
+      container.innerHTML = catsToShow.map(key => {
+        const cat = benefits[key];
+        return `
+          <div style="margin-bottom: 40px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+              <div style="width: 40px; height: 40px; background-color: ${cat.color}15; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 12px; height: 12px; background-color: ${cat.color}; border-radius: 4px;"></div>
+              </div>
+              <h2 style="font-size: 20px; font-weight: 700; color: #1f2937;">${cat.name}</h2>
+              <span style="padding: 3px 10px; background-color: #f3f4f6; border-radius: 100px; font-size: 12px; color: #6b7280;">${cat.items.length}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+              ${cat.items.map(item => `
+                <div onclick="openModal()" style="background-color: #fff; border-radius: 16px; border: 1px solid #e5e7eb; padding: 20px; display: flex; gap: 16px; align-items: center; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#6366f1'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.transform='translateY(0)'">
+                  <div style="width: 56px; height: 56px; background-color: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #4b5563;">${item.brand.charAt(0)}</div>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 18px; font-weight: 800; color: ${cat.color}; margin-bottom: 2px;">${item.offer}</div>
+                    <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 2px;">${item.brand}</div>
+                    <div style="font-size: 12px; color: #6b7280;">${item.desc}</div>
+                  </div>
+                  <div style="padding: 4px 8px; background-color: #f0fdf4; color: #10b981; border-radius: 6px; font-size: 11px; font-weight: 600; white-space: nowrap;">$${item.value}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Close modals on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        closeQuoteModal();
+      }
+    });
+
+    // Close modals on backdrop click
+    document.getElementById('signup-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'signup-modal') closeModal();
+    });
+    document.getElementById('quote-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'quote-modal') closeQuoteModal();
+    });
+
+    // Initialize
+    renderProducts();
+    renderBenefits();
+  </script>
+</body>
+</html>
